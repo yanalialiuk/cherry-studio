@@ -2,6 +2,11 @@ import { cacheService } from '@data/CacheService'
 import { usePreference } from '@data/hooks/usePreference'
 import { loggerService } from '@logger'
 import type { ResourceListRevealRequest } from '@renderer/components/chat/resources'
+import {
+  createRecentTopicEntryFromTopic,
+  upsertGlobalSearchRecentEntry
+} from '@renderer/components/global-search/globalSearchGroups'
+import { usePersistCache } from '@renderer/data/hooks/useCache'
 import { useShortcut } from '@renderer/hooks/useShortcuts'
 import { useTemporaryConversation } from '@renderer/hooks/useTemporaryConversation'
 import { useActiveTopic, useTopicMutations } from '@renderer/hooks/useTopic'
@@ -56,6 +61,8 @@ const HomePage: FC = () => {
   const pendingTemporaryTopicRef = useRef<{ topicId: string; assistantId?: string | null } | null>(null)
   const queuedTemporaryTopicTargetRef = useRef<{ assistantId?: string } | null>(null)
   const lastUsedAssistantIdRef = useRef<string | undefined>(getTopicAssistantId(cacheService.get('topic.active')))
+  const [recentItems, setRecentItems] = usePersistCache('ui.global_search.recent_items')
+  const lastRecordedRecentTopicRef = useRef<string | undefined>(undefined)
 
   const location = useLocation()
   const state = location.state as { topic?: Topic } | undefined
@@ -116,6 +123,21 @@ const HomePage: FC = () => {
   useEffect(() => {
     if (activeTopic) lastVisibleTopicRef.current = activeTopic
   }, [activeTopic])
+
+  useEffect(() => {
+    if (!activeTopic) return
+    if (temporaryTopicConversation?.type === 'assistant' && activeTopic.id === temporaryTopicConversation.topicId)
+      return
+
+    const signature = `${activeTopic.id}:${activeTopic.name}:${activeTopic.assistantId ?? ''}`
+    if (lastRecordedRecentTopicRef.current === signature) return
+
+    const nextItems = upsertGlobalSearchRecentEntry(recentItems, createRecentTopicEntryFromTopic(activeTopic))
+    lastRecordedRecentTopicRef.current = signature
+    if (nextItems !== recentItems) {
+      setRecentItems(nextItems)
+    }
+  }, [activeTopic, recentItems, setRecentItems, temporaryTopicConversation])
 
   const persistTemporaryTopicAndRefresh = useCallback(
     async (initialName?: string) => {
@@ -277,6 +299,17 @@ const HomePage: FC = () => {
     },
     [setActiveTopicAndDiscardTemporary, setShowSidebar]
   )
+
+  useEffect(() => {
+    const unsubscribe = EventEmitter.on(EVENT_NAMES.GLOBAL_SEARCH_SELECT_TOPIC, (topic) => {
+      handleHistoryTopicSelect(topic as Topic)
+    })
+
+    return () => {
+      unsubscribe()
+    }
+  }, [handleHistoryTopicSelect])
+
   const historyOverlay = (
     <HistoryRecordsPage
       mode="assistant"
