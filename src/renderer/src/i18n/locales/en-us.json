@@ -2213,6 +2213,7 @@
     "timeFilters": {
       "any": "Any time",
       "label": "Updated time",
+      "messageLabel": "Created time",
       "month": "Last month",
       "quarter": "Last 3 months",
       "today": "Today",
