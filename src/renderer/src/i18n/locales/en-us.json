@@ -2149,7 +2149,9 @@
       "assistant": "Assistant",
       "conversation": "Conversation",
       "knowledge": "Knowledge",
-      "label": "Search type"
+      "label": "Search type",
+      "session": "Session",
+      "topic": "Topic"
     },
     "groups": {
       "agent": "Agent",
@@ -2157,13 +2159,14 @@
       "conversation": "Conversation",
       "knowledge-base": "Knowledge",
       "recent": "Recent",
-      "session": "Work",
+      "session": "Session",
       "topic": "Topic"
     },
     "keyboard": {
       "select": "Select"
     },
     "messageSearch": {
+      "entry": "Messages",
       "hint": "Type to search message content",
       "matchModeLabel": "Match mode",
       "matchModes": {
