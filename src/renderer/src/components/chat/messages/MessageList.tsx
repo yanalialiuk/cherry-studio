@@ -217,6 +217,7 @@ const MessageList = () => {
   useEffect(() => {
     return bindRuntime?.({
       scrollToBottom,
+      locateMessage: scrollToMessageById,
       copyTopicImage: async () => {
         await captureScrollableAsBlob(scrollContainerRef, async (blob) => {
           if (blob) {
@@ -232,7 +233,7 @@ const MessageList = () => {
         }
       }
     })
-  }, [bindRuntime, copyImage, meta.imageExportFileName, saveImage, scrollToBottom])
+  }, [bindRuntime, copyImage, meta.imageExportFileName, saveImage, scrollToBottom, scrollToMessageById])
 
   if (data.isInitialLoading) {
     return <MessageListInitialLoading />
